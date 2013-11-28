@@ -1,13 +1,17 @@
 package com.jkgames.GameAndEngine;
 
 
+import android.content.Intent;
 import android.graphics.Color;
+import android.os.Handler;
 import android.view.KeyEvent;
 import android.widget.Toast;
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.options.EngineOptions;
 import org.anddev.andengine.engine.options.resolutionpolicy.RatioResolutionPolicy;
+import org.anddev.andengine.entity.modifier.ScaleAtModifier;
+import org.anddev.andengine.entity.modifier.ScaleModifier;
 import org.anddev.andengine.entity.scene.Scene;
 import org.anddev.andengine.entity.scene.background.SpriteBackground;
 import org.anddev.andengine.entity.scene.menu.MenuScene;
@@ -38,24 +42,23 @@ public class NewGameActivity extends BaseGameActivity implements MenuScene.IOnMe
 
     protected Camera mCamera;
     protected Scene mMainScene;
+    protected Handler mHandler;
+
     private BitmapTextureAtlas mMenuBackTexture;
     private TextureRegion mMenuBackTextureRegion;
     protected MenuScene mPopUpMenuScene;
-    private BitmapTextureAtlas mPopUpTexture;
     private BitmapTextureAtlas mFontTexture;
     private BitmapTextureAtlas mMenuItemTexture;
     private Font mFont;
-    protected TextureRegion mPopUpAboutTextureRegion;
     protected TextureRegion mContinueTextureRegion;
     protected TextureRegion mNewGameTextureRegion;
-    protected TextureRegion mMenuPlayTextureRegion;
-    protected TextureRegion mMenuScoresTextureRegion;
     protected TextureRegion mMenuOptionsTextureRegion;
     protected TextureRegion mMenuHelpTextureRegion;
     private boolean popupDisplayed;
 
     @Override
     public Engine onLoadEngine() {
+        mHandler = new Handler();
         this.mCamera = new Camera(0, 0, CAMERA_WIDTH,
                 CAMERA_HEIGHT);
         return new Engine(new EngineOptions(true,
@@ -147,9 +150,8 @@ public class NewGameActivity extends BaseGameActivity implements MenuScene.IOnMe
     public boolean onMenuItemClicked(MenuScene pMenuScene, IMenuItem pMenuItem, float pMenuItemLocalX, float pMenuItemLocalY) {
         switch(pMenuItem.getID()) {
             case MENU_SAVE_FILE_0:
-                Toast.makeText(NewGameActivity.this,
-                        "Save file 1 selected",
-                        Toast.LENGTH_SHORT).show();
+                mMainScene.registerEntityModifier(new ScaleModifier(1.0f, 1.0f, 0.0f));
+                mHandler.post(mLaunchWorldTask);
                 return true;
             case MENU_SAVE_FILE_1:
                 Toast.makeText(NewGameActivity.this,
@@ -249,4 +251,22 @@ public class NewGameActivity extends BaseGameActivity implements MenuScene.IOnMe
         this.mPopUpMenuScene.setBackgroundEnabled(false);
         this.mPopUpMenuScene.setOnMenuItemClickListener(this);
     }
+
+    @Override
+    public void onResumeGame() {
+        super.onResumeGame();
+        mMainScene.registerEntityModifier(new ScaleAtModifier(0.5f,
+                0.0f, 1.0f, CAMERA_WIDTH/2, CAMERA_HEIGHT/2));
+//        mStaticMenuScene.registerEntityModifier(
+//                new ScaleAtModifier(0.5f, 0.0f, 1.0f,
+//                        CAMERA_WIDTH/2, CAMERA_HEIGHT/2));
+    }
+
+    private Runnable mLaunchWorldTask = new Runnable() {
+        public void run() {
+            Intent myIntent = new Intent(NewGameActivity.this,
+                    WorldActivity.class);
+            NewGameActivity.this.startActivity(myIntent);
+        }
+    };
 }

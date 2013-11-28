@@ -110,15 +110,11 @@ public class MainMenuActivity extends BaseGameActivity implements MenuScene.IOnM
         this.createStaticMenuScene();
         //this.createPopUpMenuScene();
         /* Center the background on the camera. */
-        final int centerX = ( CAMERA_WIDTH -
-                this.mMenuBackTextureRegion.getWidth()) / 2;
-        final int centerY = (CAMERA_HEIGHT -
-                this.mMenuBackTextureRegion.getHeight()) /
-                2;
+        final int centerX = ( CAMERA_WIDTH - this.mMenuBackTextureRegion.getWidth()) / 2;
+        final int centerY = (CAMERA_HEIGHT - this.mMenuBackTextureRegion.getHeight()) / 2;
         this.mMainScene = new Scene();
         /* Add the background and static menu */
-        final Sprite menuBack = new Sprite(centerX,
-                centerY, this.mMenuBackTextureRegion);
+        final Sprite menuBack = new Sprite(centerX, centerY, this.mMenuBackTextureRegion);
         mMainScene.setBackground(new SpriteBackground(menuBack));
         mMainScene.setChildScene(mStaticMenuScene);
         return this.mMainScene;
