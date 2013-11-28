@@ -1,9 +1,7 @@
 package com.jkgames.GameAndEngine;
 
 
-import android.content.Intent;
 import android.graphics.Color;
-import android.os.Handler;
 import android.view.KeyEvent;
 import android.widget.Toast;
 import org.anddev.andengine.engine.Engine;
@@ -30,23 +28,19 @@ import org.anddev.andengine.ui.activity.BaseGameActivity;
 
 import javax.microedition.khronos.opengles.GL10;
 
-public class MainMenuActivity extends BaseGameActivity implements MenuScene.IOnMenuItemClickListener {
+public class NewGameActivity extends BaseGameActivity implements MenuScene.IOnMenuItemClickListener {
 
     private static final int CAMERA_WIDTH = 480;
     private static final int CAMERA_HEIGHT = 320;
-    protected static final int MENU_ABOUT = 0;
-    protected static final int MENU_NEW_GAME = 1;
-    protected static final int MENU_CONTINUE = 2;
-    protected static final int MENU_PLAY = 100;
-    protected static final int MENU_SCORES = MENU_PLAY + 1;
-    protected static final int MENU_OPTIONS = MENU_SCORES + 1;
-    protected static final int MENU_HELP = MENU_OPTIONS + 1;
+    protected static final int MENU_SAVE_FILE_0 = 0;
+    protected static final int MENU_SAVE_FILE_1 = 1;
+    protected static final int MENU_SAVE_FILE_2 = 2;
 
     protected Camera mCamera;
     protected Scene mMainScene;
     private BitmapTextureAtlas mMenuBackTexture;
     private TextureRegion mMenuBackTextureRegion;
-    protected MenuScene mStaticMenuScene, mPopUpMenuScene;
+    protected MenuScene mPopUpMenuScene;
     private BitmapTextureAtlas mPopUpTexture;
     private BitmapTextureAtlas mFontTexture;
     private BitmapTextureAtlas mMenuItemTexture;
@@ -59,11 +53,9 @@ public class MainMenuActivity extends BaseGameActivity implements MenuScene.IOnM
     protected TextureRegion mMenuOptionsTextureRegion;
     protected TextureRegion mMenuHelpTextureRegion;
     private boolean popupDisplayed;
-    protected Handler mHandler;
 
     @Override
     public Engine onLoadEngine() {
-        mHandler = new Handler();
         this.mCamera = new Camera(0, 0, CAMERA_WIDTH,
                 CAMERA_HEIGHT);
         return new Engine(new EngineOptions(true,
@@ -107,7 +99,7 @@ public class MainMenuActivity extends BaseGameActivity implements MenuScene.IOnM
     @Override
     public Scene onLoadScene() {
         this.mEngine.registerUpdateHandler(new FPSLogger());
-        this.createStaticMenuScene();
+        this.createPopUpMenuScene();
         //this.createPopUpMenuScene();
         /* Center the background on the camera. */
         final int centerX = ( CAMERA_WIDTH -
@@ -120,7 +112,7 @@ public class MainMenuActivity extends BaseGameActivity implements MenuScene.IOnM
         final Sprite menuBack = new Sprite(centerX,
                 centerY, this.mMenuBackTextureRegion);
         mMainScene.setBackground(new SpriteBackground(menuBack));
-        mMainScene.setChildScene(mStaticMenuScene);
+        mMainScene.setChildScene(mPopUpMenuScene);
         return this.mMainScene;
     }
 
@@ -153,17 +145,23 @@ public class MainMenuActivity extends BaseGameActivity implements MenuScene.IOnM
 
     @Override
     public boolean onMenuItemClicked(MenuScene pMenuScene, IMenuItem pMenuItem, float pMenuItemLocalX, float pMenuItemLocalY) {
-            switch(pMenuItem.getID()) {
-                case MENU_NEW_GAME:
-                    mHandler.post(mLaunchNewGameTask);
-                    return true;
-                case MENU_CONTINUE:
-                    Toast.makeText(MainMenuActivity.this,
-                            "Continue selected", Toast.LENGTH_SHORT).show();
-                    return true;
-                default:
-                    return false;
-            }
+        switch(pMenuItem.getID()) {
+            case MENU_SAVE_FILE_0:
+                Toast.makeText(NewGameActivity.this,
+                        "Save file 1 selected",
+                        Toast.LENGTH_SHORT).show();
+                return true;
+            case MENU_SAVE_FILE_1:
+                Toast.makeText(NewGameActivity.this,
+                        "Save file 2 selected", Toast.LENGTH_SHORT).show();
+                return true;
+            case MENU_SAVE_FILE_2:
+                Toast.makeText(NewGameActivity.this,
+                        "Save file 3 selected", Toast.LENGTH_SHORT).show();
+                return true;
+            default:
+                return false;
+        }
     }
 
     // ===========================================================
@@ -202,27 +200,53 @@ public class MainMenuActivity extends BaseGameActivity implements MenuScene.IOnM
 //        this.mStaticMenuScene.setOnMenuItemClickListener(this);
 //    }
 
-    protected void createStaticMenuScene() {
-        this.mStaticMenuScene = new MenuScene(this.mCamera);
+    protected void createPopUpMenuScene() {
+        this.mPopUpMenuScene = new MenuScene(this.mCamera);
 
-        final SpriteMenuItem newGameMenuItem = new SpriteMenuItem(MENU_NEW_GAME, this.mNewGameTextureRegion);
-        newGameMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-        this.mStaticMenuScene.addMenuItem(newGameMenuItem);
+        final IMenuItem saveFile0 = new ColorMenuItemDecorator(
+                new TextMenuItem(MENU_SAVE_FILE_0, mFont, "Empty"),
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+        saveFile0.setBlendFunction(GL10.GL_SRC_ALPHA,
+                GL10.GL_ONE_MINUS_SRC_ALPHA);
+        this.mPopUpMenuScene.addMenuItem(saveFile0);
 
-        final SpriteMenuItem continueMenuItem = new SpriteMenuItem(MENU_CONTINUE, this.mContinueTextureRegion);
-        continueMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA);
-        this.mStaticMenuScene.addMenuItem(continueMenuItem);
+        final IMenuItem saveFile1 = new ColorMenuItemDecorator(
+                new TextMenuItem(MENU_SAVE_FILE_1, mFont, "Empty"),
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+        saveFile1.setBlendFunction(GL10.GL_SRC_ALPHA,
+                GL10.GL_ONE_MINUS_SRC_ALPHA);
+        this.mPopUpMenuScene.addMenuItem(saveFile1);
 
-        this.mStaticMenuScene.buildAnimations();
-        this.mStaticMenuScene.setBackgroundEnabled(false);
-        this.mStaticMenuScene.setOnMenuItemClickListener(this);
+        final IMenuItem saveFile2 = new ColorMenuItemDecorator(
+                new TextMenuItem(MENU_SAVE_FILE_2, mFont, "Empty"),
+                0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f);
+        saveFile2.setBlendFunction(GL10.GL_SRC_ALPHA,
+                GL10.GL_ONE_MINUS_SRC_ALPHA);
+        this.mPopUpMenuScene.addMenuItem(saveFile2);
+
+//        final SpriteMenuItem aboutMenuItem =
+//                new SpriteMenuItem(MENU_SAVE_FILE_0,
+//                        this.mPopUpAboutTextureRegion);
+//        aboutMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA,
+//                GL10.GL_ONE_MINUS_SRC_ALPHA);
+//        this.mPopUpMenuScene.addMenuItem(aboutMenuItem);
+//
+//        final SpriteMenuItem quitMenuItem = new SpriteMenuItem(
+//                MENU_SAVE_FILE_1, this.mPopUpQuitTextureRegion);
+//        quitMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA,
+//                GL10.GL_ONE_MINUS_SRC_ALPHA);
+//        this.mPopUpMenuScene.addMenuItem(quitMenuItem);
+//
+//        final SpriteMenuItem quitMenuItem = new SpriteMenuItem(
+//                MENU_SAVE_FILE_2, this.mPopUpQuitTextureRegion);
+//        quitMenuItem.setBlendFunction(GL10.GL_SRC_ALPHA,
+//                GL10.GL_ONE_MINUS_SRC_ALPHA);
+//        this.mPopUpMenuScene.addMenuItem(quitMenuItem);
+
+        this.mPopUpMenuScene.setMenuAnimator(
+                new SlideMenuAnimator());
+        this.mPopUpMenuScene.buildAnimations();
+        this.mPopUpMenuScene.setBackgroundEnabled(false);
+        this.mPopUpMenuScene.setOnMenuItemClickListener(this);
     }
-
-    private Runnable mLaunchNewGameTask = new Runnable() {
-        @Override
-        public void run() {
-            Intent myIntent = new Intent(MainMenuActivity.this, NewGameActivity.class);
-            MainMenuActivity.this.startActivity(myIntent);
-        };
-    };
 }

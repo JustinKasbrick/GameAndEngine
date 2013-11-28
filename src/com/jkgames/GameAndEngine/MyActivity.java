@@ -1,7 +1,9 @@
 package com.jkgames.GameAndEngine;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.options.EngineOptions;
@@ -21,6 +23,7 @@ import org.anddev.andengine.opengl.texture.region.TextureRegion;
 import org.anddev.andengine.opengl.texture.region.TextureRegionFactory;
 import org.anddev.andengine.ui.activity.BaseGameActivity;
 
+
 public class MyActivity extends BaseGameActivity {
     // ===========================================================
     // Constants
@@ -34,12 +37,14 @@ public class MyActivity extends BaseGameActivity {
     private Camera mCamera;
     private BitmapTextureAtlas mTexture;
     private TextureRegion mSplashTextureRegion;
+    private Handler mHandler;
     // ===========================================================
     // Methods for/from SuperClass/Interfaces
     // ===========================================================
 
     @Override
     public Engine onLoadEngine() {
+        mHandler = new Handler();
         this.mCamera = new Camera(0, 0, CAMERA_WIDTH,
                 CAMERA_HEIGHT);
         return new Engine(new EngineOptions(true,
@@ -52,7 +57,7 @@ public class MyActivity extends BaseGameActivity {
     public void onLoadResources() {
         this.mTexture = new BitmapTextureAtlas(1024, 1024, TextureOptions.BILINEAR_PREMULTIPLYALPHA);
         this.mSplashTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mTexture, this,
-                "glBackground.png", 0, 0);
+                "splashScreen.png", 0, 0);
         this.mEngine.getTextureManager().loadTexture(this.mTexture);
     }
 
@@ -69,6 +74,7 @@ public class MyActivity extends BaseGameActivity {
         /* Create the sprite and add it to the scene. */
         final Sprite splash = new Sprite(centerX,
                 centerY, this.mSplashTextureRegion);
+
         scene.setBackground(new SpriteBackground(splash));
 
         return scene;
@@ -76,6 +82,14 @@ public class MyActivity extends BaseGameActivity {
 
     @Override
     public void onLoadComplete() {
-        //To change body of implemented methods use File | Settings | File Templates.
+        mHandler.postDelayed(mLaunchTask, 3000);
     }
+
+    private Runnable mLaunchTask = new Runnable() {
+        @Override
+        public void run() {
+            Intent myIntent = new Intent(MyActivity.this, MainMenuActivity.class);
+            MyActivity.this.startActivity(myIntent);
+        };
+    };
 }

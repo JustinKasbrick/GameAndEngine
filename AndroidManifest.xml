@@ -12,5 +12,7 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
+        <activity android:name=".MainMenuActivity" android:label="Main Menu Activity" android:configChanges="keyboard|keyboardHidden|orientation"/>
+        <activity android:name=".NewGameActivity" android:label="New Game Activity" android:configChanges="keyboard|keyboardHidden|orientation"/>
     </application>
 </manifest> 
