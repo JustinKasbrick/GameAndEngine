@@ -1,13 +1,16 @@
 package com.jkgames.GameAndEngine;
 
+import android.content.Intent;
 import android.os.Handler;
 import android.util.Log;
+import android.widget.Toast;
 import org.anddev.andengine.engine.Engine;
 import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.entity.modifier.*;
 import org.anddev.andengine.entity.scene.Scene;
 import org.anddev.andengine.entity.sprite.Sprite;
 import org.anddev.andengine.entity.util.FPSLogger;
+import org.anddev.andengine.input.touch.TouchEvent;
 import org.anddev.andengine.opengl.texture.TextureOptions;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlasTextureRegionFactory;
@@ -70,10 +73,55 @@ public class WorldActivity extends BaseGameActivity {
         final Sprite background = new Sprite(centerX, centerY, worldTextureRegion);
         scene.attachChild(background);
 
-        final Sprite[] level = {new Sprite(100, 100, levelTextureRegion),
-                new Sprite(150, 200, levelTextureRegion)};
+        final Sprite[] level = {new Sprite(100, 100, levelTextureRegion){
+            @Override
+            public boolean onAreaTouched(
+                    final TouchEvent pAreaTouchEvent,
+                    final float pTouchAreaLocalX,
+                    final float pTouchAreaLocalY) {
+                if(pAreaTouchEvent.getAction() == TouchEvent.ACTION_UP)
+                {
+                    mHandler.post(mLaunchLevel);
+                }
+                return true;
+            }
+        },
+                new Sprite(150, 200, levelTextureRegion){
+                    @Override
+                    public boolean onAreaTouched(
+                            final TouchEvent pAreaTouchEvent,
+                            final float pTouchAreaLocalX,
+                            final float pTouchAreaLocalY) {
+                        switch(pAreaTouchEvent.getAction()) {
+                            case TouchEvent.ACTION_DOWN:
+                                Toast.makeText(WorldActivity.this,
+                                        "Sprite touch DOWN",
+                                        Toast.LENGTH_SHORT).show();
+                                break;
+                            case TouchEvent.ACTION_UP:
+                                Toast.makeText(WorldActivity.this,
+                                        "Sprite touch UP",
+                                        Toast.LENGTH_SHORT).show();
+                                break;
+                            case TouchEvent.ACTION_MOVE:
+                                this.setPosition(pAreaTouchEvent.getX() -
+                                        this.getWidth() / 2,
+                                        pAreaTouchEvent.getY() -
+                                                this.getHeight() / 2);
+                                break;
+                        }
+                        return true;
+                    }
+                }};
+        scene.setTouchAreaBindingEnabled(true);
         for(int i=0; i<level.length; i++)
-            scene.attachChild(level[i]);
+        {
+            scene.registerTouchArea(level[i]);
+
+            scene.getLastChild().attachChild(level[i]);
+
+        }
+
 
         final Sprite bob = new Sprite(100+5, 100-15, bobTextureRegion);
         scene.attachChild(bob);
@@ -104,4 +152,12 @@ public class WorldActivity extends BaseGameActivity {
     public void onLoadComplete() {
         //To change body of implemented methods use File | Settings | File Templates.
     }
+
+    private Runnable mLaunchLevel = new Runnable() {
+        @Override
+        public void run() {
+            Intent myIntent = new Intent(WorldActivity.this, LevelActivity.class);
+            WorldActivity.this.startActivity(myIntent);
+        };
+    };
 }

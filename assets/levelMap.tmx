@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.0" orientation="orthogonal" width="75" height="25" tilewidth="32" tileheight="32">
+ <tileset firstgid="1" name="forest" tilewidth="32" tileheight="32">
+  <image source="GameTiles.png" width="256" height="256"/>
+  <tile id="0">
+   <properties>
+    <property name="Collidable" value="False"/>
+   </properties>
+  </tile>
+  <tile id="1">
+   <properties>
+    <property name="Collidable" value="False"/>
+   </properties>
+  </tile>
+  <tile id="2">
+   <properties>
+    <property name="Collidable" value="True"/>
+   </properties>
+  </tile>
+  <tile id="3">
+   <properties>
+    <property name="Collidable" value="False"/>
+   </properties>
+  </tile>
+  <tile id="4">
+   <properties>
+    <property name="Collidable" value="True"/>
+   </properties>
+  </tile>
+  <tile id="5">
+   <properties>
+    <property name="Collidable" value="True"/>
+   </properties>
+  </tile>
+  <tile id="6">
+   <properties>
+    <property name="Collidable" value="True"/>
+   </properties>
+  </tile>
+  <tile id="7">
+   <properties>
+    <property name="Collidable" value="True"/>
+   </properties>
+  </tile>
+ </tileset>
+ <layer name="Tile Layer 1" width="75" height="25">
+  <data encoding="base64" compression="gzip">
+   H4sIAAAAAAAAC+3RSQqAQAxE0XYe7n9gs5TQi66gHYX/4O8UYlkKAAAAAAAAAORZrc3arUloEfLvZlO+895hzYEU/t3orZH/V3su8r3RTnGr2l5vNFbquUvLPa31unFwZW3l71DKupWtvr/X37bK7ImtLiFAx3lMHQAA
+  </data>
+ </layer>
+</map>

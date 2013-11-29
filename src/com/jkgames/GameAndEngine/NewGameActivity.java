@@ -158,8 +158,7 @@ public class NewGameActivity extends BaseGameActivity implements MenuScene.IOnMe
                         "Save file 2 selected", Toast.LENGTH_SHORT).show();
                 return true;
             case MENU_SAVE_FILE_2:
-                Toast.makeText(NewGameActivity.this,
-                        "Save file 3 selected", Toast.LENGTH_SHORT).show();
+                mHandler.post(mDemolitionTask);
                 return true;
             default:
                 return false;
@@ -266,6 +265,14 @@ public class NewGameActivity extends BaseGameActivity implements MenuScene.IOnMe
         public void run() {
             Intent myIntent = new Intent(NewGameActivity.this,
                     WorldActivity.class);
+            NewGameActivity.this.startActivity(myIntent);
+        }
+    };
+
+    private Runnable mDemolitionTask = new Runnable() {
+        public void run() {
+            Intent myIntent = new Intent(NewGameActivity.this,
+                    Demolition.class);
             NewGameActivity.this.startActivity(myIntent);
         }
     };
