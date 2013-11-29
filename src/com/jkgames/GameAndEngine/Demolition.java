@@ -113,7 +113,7 @@ public class Demolition extends BaseGameActivity {
 
         this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 10), false);
 
-        final Sprite face = new Sprite(centerX, centerY, this.bobTextureRegion);
+        final Sprite face = new Sprite(centerX, 0, this.bobTextureRegion);
 
         final Body body = PhysicsFactory.createBoxBody(mPhysicsWorld,
                 face, BodyDef.BodyType.DynamicBody,
@@ -162,10 +162,45 @@ public class Demolition extends BaseGameActivity {
                 BodyDef.BodyType.StaticBody, wallFixtureDef);
         PhysicsFactory.createBoxBody(mPhysicsWorld, right,
                 BodyDef.BodyType.StaticBody, wallFixtureDef);
+
+
+        final Shape one = new Rectangle(65, CAMERA_HEIGHT - 181, 84, 82);
+        final Shape two = new Rectangle(149, CAMERA_HEIGHT - 191, 84, 82);
+        two.setRotation(-196.6992f);
+        final Shape three = new Rectangle(226, CAMERA_HEIGHT - 214, 84, 82);
+        three.setRotation(-197);
+        final Shape four = new Rectangle(324, CAMERA_HEIGHT - 221, 144, 91);
+        final Shape five = new Rectangle(441, CAMERA_HEIGHT - 221, 144, 91);
+        final Shape six = new Rectangle(629, CAMERA_HEIGHT - 174, 241, 188);
+        six.setRotation(15);
+        final FixtureDef platforms = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
+
+        PhysicsFactory.createBoxBody(mPhysicsWorld, one,
+                BodyDef.BodyType.StaticBody, platforms);
+        PhysicsFactory.createBoxBody(mPhysicsWorld, two,
+                BodyDef.BodyType.StaticBody, platforms);
+        PhysicsFactory.createBoxBody(mPhysicsWorld, three,
+                BodyDef.BodyType.StaticBody, platforms);
+        PhysicsFactory.createBoxBody(mPhysicsWorld, four,
+                BodyDef.BodyType.StaticBody, platforms);
+        PhysicsFactory.createBoxBody(mPhysicsWorld, five,
+                BodyDef.BodyType.StaticBody, platforms);
+        PhysicsFactory.createBoxBody(mPhysicsWorld, six,
+                BodyDef.BodyType.StaticBody, platforms);
+
+
+
         scene.attachChild(ground);
         scene.attachChild(roof);
         scene.attachChild(left);
         scene.attachChild(right);
+        scene.attachChild(one);
+        scene.attachChild(two);
+        scene.attachChild(three);
+        scene.attachChild(four);
+        scene.attachChild(five);
+        scene.attachChild(six);
+
         scene.registerUpdateHandler(mPhysicsWorld);
 
 
