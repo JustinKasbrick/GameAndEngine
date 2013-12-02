@@ -93,13 +93,13 @@ public class MyActivity extends BaseGameActivity {
 
     @Override
     public void onLoadComplete() {
-        mHandler.postDelayed(mLaunchTask, 3000);
+        mHandler.postDelayed(mLaunchTask, 500);
     }
 
     private Runnable mLaunchTask = new Runnable() {
         @Override
         public void run() {
-            Intent myIntent = new Intent(MyActivity.this, MainMenuActivity.class);
+            Intent myIntent = new Intent(MyActivity.this, Demolition.class);
             MyActivity.this.startActivity(myIntent);
         };
     };

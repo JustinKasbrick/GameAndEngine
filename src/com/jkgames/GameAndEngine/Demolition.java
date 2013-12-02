@@ -1,5 +1,6 @@
 package com.jkgames.GameAndEngine;
 
+import android.hardware.SensorManager;
 import android.opengl.GLES10;
 import android.util.Log;
 import android.widget.Toast;
@@ -7,7 +8,9 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.physics.box2d.Body;
 import com.badlogic.gdx.physics.box2d.BodyDef;
 import com.badlogic.gdx.physics.box2d.FixtureDef;
+import com.badlogic.gdx.physics.box2d.PolygonShape;
 import org.anddev.andengine.engine.Engine;
+import org.anddev.andengine.engine.camera.BoundCamera;
 import org.anddev.andengine.engine.camera.Camera;
 import org.anddev.andengine.engine.camera.hud.controls.AnalogOnScreenControl;
 import org.anddev.andengine.engine.camera.hud.controls.BaseOnScreenControl;
@@ -25,6 +28,7 @@ import org.anddev.andengine.extension.physics.box2d.PhysicsConnector;
 import org.anddev.andengine.extension.physics.box2d.PhysicsFactory;
 import org.anddev.andengine.extension.physics.box2d.PhysicsWorld;
 import org.anddev.andengine.extension.physics.box2d.util.Vector2Pool;
+import org.anddev.andengine.extension.physics.box2d.util.constants.PhysicsConstants;
 import org.anddev.andengine.input.touch.TouchEvent;
 import org.anddev.andengine.opengl.texture.TextureOptions;
 import org.anddev.andengine.opengl.texture.atlas.bitmap.BitmapTextureAtlas;
@@ -48,24 +52,25 @@ public class Demolition extends BaseGameActivity {
     // ===========================================================
 
     private Camera mCamera;
-
+    private MainCharacter mainCharacter;
     private BuildableBitmapTextureAtlas mBitmapTextureAtlas;
     private TextureRegion bobTextureRegion;
 
     private TextureRegion mOnScreenControlBaseTextureRegion;
     private TextureRegion mOnScreenControlKnobTextureRegion;
+    private TextureRegion mOnScreenJumpButtonTextureRegion;
+    private TextureRegion mOnScreenAttackButtonTextureRegion;
 
     private static final FixtureDef FIXTURE_DEF =
-            PhysicsFactory.createFixtureDef(1, 0.5f, 0.5f);
+            PhysicsFactory.createFixtureDef(1, 0f, 0.5f);
     private PhysicsWorld mPhysicsWorld;
-    private Vector2 mVelocity;
 
     private boolean mPlaceOnScreenControlsAtDifferentVerticalLocations = false;
-
+    private float PtoM =
+            PhysicsConstants.PIXEL_TO_METER_RATIO_DEFAULT;
     @Override
     public Engine onLoadEngine() {
-        this.mCamera = new Camera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT);
-
+        this.mCamera = new BoundCamera(0, 0, CAMERA_WIDTH, CAMERA_HEIGHT, -1000, 1000, -1000, 1000);
         final EngineOptions engineOptions = new EngineOptions(true, EngineOptions.ScreenOrientation.LANDSCAPE, new RatioResolutionPolicy(CAMERA_WIDTH, CAMERA_HEIGHT), this.mCamera);
         //engineOptions.getTouchOptions().setNeedsMultiTouch(true);
 
@@ -93,6 +98,10 @@ public class Demolition extends BaseGameActivity {
                 this, "analog.png");
         this.mOnScreenControlKnobTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas,
                 this, "analog.png");
+        this.mOnScreenAttackButtonTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas,
+                this, "b_button.png");
+        this.mOnScreenJumpButtonTextureRegion = BitmapTextureAtlasTextureRegionFactory.createFromAsset(this.mBitmapTextureAtlas,
+                this, "a_button.png");
         try {
             mBitmapTextureAtlas.build(new BlackPawnTextureBuilder<IBitmapTextureAtlasSource, BitmapTextureAtlas>(2));
         } catch (final ITextureBuilder.TextureAtlasSourcePackingException e) {
@@ -111,18 +120,20 @@ public class Demolition extends BaseGameActivity {
         final float centerX = (CAMERA_WIDTH - this.bobTextureRegion.getWidth()) / 2;
         final float centerY = (CAMERA_HEIGHT - this.bobTextureRegion.getHeight()) / 2;
 
-        this.mPhysicsWorld = new PhysicsWorld(new Vector2(0, 10), false);
+        this.mPhysicsWorld = new MaxStepPhysicsWorld(60, new Vector2(0, SensorManager.GRAVITY_EARTH), false);
 
-        final Sprite face = new Sprite(centerX, 0, this.bobTextureRegion);
+        mainCharacter = new MainCharacter();
+        final Sprite face = new Sprite(-15.5f, -150.5f, this.bobTextureRegion);
 
         final Body body = PhysicsFactory.createBoxBody(mPhysicsWorld,
                 face, BodyDef.BodyType.DynamicBody,
                 FIXTURE_DEF);
+        body.setFixedRotation(true);
 
         scene.attachChild(face);
         mPhysicsWorld.registerPhysicsConnector(
                 new PhysicsConnector(face, body, true, true));
-
+        mCamera.setChaseEntity(face);
         /* Velocity control (left). */
         final float x1 = 50;
         final float y1 = CAMERA_HEIGHT - this.mOnScreenControlBaseTextureRegion.getHeight()-50;
@@ -131,9 +142,18 @@ public class Demolition extends BaseGameActivity {
                 new AnalogOnScreenControl.IAnalogOnScreenControlListener() {
             @Override
             public void onControlChange(final BaseOnScreenControl pBaseOnScreenControl, final float pValueX, final float pValueY) {
-                mVelocity = Vector2Pool.obtain(pValueX*2, 0);
-                body.applyForce(mVelocity, body.getLocalCenter().sub(bobTextureRegion.getHeight()/2, 0));
-                Vector2Pool.recycle(mVelocity);
+//                mVelocity = body.getLinearVelocity();
+//
+//                body.setLinearVelocity(mVelocity.add(pValueX, 0));
+
+                body.applyForce(new Vector2(pValueX*30, 0), new Vector2(body.getWorldCenter()));
+//                mVelocity = body.getLinearVelocity();
+//                float maxSpeed = 2;
+//                if(mVelocity.x > maxSpeed)
+//                    body.setLinearVelocity(new Vector2(maxSpeed, mVelocity.y));
+//                if(mVelocity.x < -maxSpeed)
+//                    body.setLinearVelocity(new Vector2(-maxSpeed, mVelocity.y));
+//                Vector2Pool.recycle(mVelocity);
             }
 
             @Override
@@ -144,62 +164,56 @@ public class Demolition extends BaseGameActivity {
         velocityOnScreenControl.getControlBase().setBlendFunction(GLES10.GL_SRC_ALPHA, GLES10.GL_ONE_MINUS_SRC_ALPHA);
         velocityOnScreenControl.getControlBase().setAlpha(0.5f);
 
+        final Sprite jumpButton = new Sprite(mCamera.getCenterX()+mOnScreenJumpButtonTextureRegion.getWidth(), 100, mOnScreenJumpButtonTextureRegion){
+        @Override
+        public boolean onAreaTouched(
+                final TouchEvent pAreaTouchEvent,
+                final float pTouchAreaLocalX,
+                final float pTouchAreaLocalY) {
+            if(pAreaTouchEvent.getAction() == TouchEvent.ACTION_DOWN) {
+
+                body.applyLinearImpulse(mainCharacter.getJumpVelocity(), body.getWorldCenter());
+            }
+            return true;
+    }};
+
         scene.setChildScene(velocityOnScreenControl);
 
-        final Shape ground = new Rectangle(0, CAMERA_HEIGHT - 2,
-                CAMERA_WIDTH, 2);
-        final Shape roof = new Rectangle(0, 0, CAMERA_WIDTH, 2);
-        final Shape left = new Rectangle(0, 0, 2, CAMERA_HEIGHT);
-        final Shape right = new Rectangle(CAMERA_WIDTH - 2, 0, 2,
-                CAMERA_HEIGHT);
+//        final Shape ground = new Rectangle(0, CAMERA_HEIGHT - 2,
+//                CAMERA_WIDTH, 2);
+//        final Shape roof = new Rectangle(0, 0, CAMERA_WIDTH, 2);
+//        final Shape left = new Rectangle(0, 0, 2, CAMERA_HEIGHT);
+//        final Shape right = new Rectangle(CAMERA_WIDTH - 2, 0, 2,
+//                CAMERA_HEIGHT);
+//        final FixtureDef wallFixtureDef =
+//                PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
+//        PhysicsFactory.createBoxBody(mPhysicsWorld, ground,
+//                BodyDef.BodyType.StaticBody, wallFixtureDef);
+//        PhysicsFactory.createBoxBody(mPhysicsWorld, roof,
+//                BodyDef.BodyType.StaticBody, wallFixtureDef);
+//        PhysicsFactory.createBoxBody(mPhysicsWorld, left,
+//                BodyDef.BodyType.StaticBody, wallFixtureDef);
+//        PhysicsFactory.createBoxBody(mPhysicsWorld, right,
+//                BodyDef.BodyType.StaticBody, wallFixtureDef);
+//
+//        scene.attachChild(ground);
+//        scene.attachChild(roof);
+//        scene.attachChild(left);
+//        scene.attachChild(right);
+
+        Vector2[] v = new Vector2[] {new Vector2(-173, -224.5f), new Vector2(-123, -197.5f), new Vector2(-93, -166.5f),
+                new Vector2(-52, -122.5f), new Vector2(-5, -98.5f), new Vector2(21, -82.5f), new Vector2(171, -81.5f),
+                new Vector2(173, 223.5f)};
+
         final FixtureDef wallFixtureDef =
-                PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
-        PhysicsFactory.createBoxBody(mPhysicsWorld, ground,
-                BodyDef.BodyType.StaticBody, wallFixtureDef);
-        PhysicsFactory.createBoxBody(mPhysicsWorld, roof,
-                BodyDef.BodyType.StaticBody, wallFixtureDef);
-        PhysicsFactory.createBoxBody(mPhysicsWorld, left,
-                BodyDef.BodyType.StaticBody, wallFixtureDef);
-        PhysicsFactory.createBoxBody(mPhysicsWorld, right,
-                BodyDef.BodyType.StaticBody, wallFixtureDef);
+                PhysicsFactory.createFixtureDef(0, 0f, 0.5f);
+
+        createRectangle( 240f, -135f, 253f, 27f, -20f, wallFixtureDef, BodyDef.BodyType.StaticBody, scene );
+        createRectangle( -170f, -276f, 25f, 25f, 45f, wallFixtureDef, BodyDef.BodyType.DynamicBody, scene );
+        createRectangle( -205.5380592228744f, -161.9619407771256f, 202.9238815542512f, 24.07611844574882f, 45f, wallFixtureDef, BodyDef.BodyType.StaticBody, scene );
+        createRectangle( -6.5f, -92.5f, 253f, 27f, 0f, wallFixtureDef, BodyDef.BodyType.StaticBody, scene );
 
 
-        final Shape one = new Rectangle(65, CAMERA_HEIGHT - 181, 84, 82);
-        final Shape two = new Rectangle(149, CAMERA_HEIGHT - 191, 84, 82);
-        two.setRotation(-196.6992f);
-        final Shape three = new Rectangle(226, CAMERA_HEIGHT - 214, 84, 82);
-        three.setRotation(-197);
-        final Shape four = new Rectangle(324, CAMERA_HEIGHT - 221, 144, 91);
-        final Shape five = new Rectangle(441, CAMERA_HEIGHT - 221, 144, 91);
-        final Shape six = new Rectangle(629, CAMERA_HEIGHT - 174, 241, 188);
-        six.setRotation(15);
-        final FixtureDef platforms = PhysicsFactory.createFixtureDef(0, 0.5f, 0.5f);
-
-        PhysicsFactory.createBoxBody(mPhysicsWorld, one,
-                BodyDef.BodyType.StaticBody, platforms);
-        PhysicsFactory.createBoxBody(mPhysicsWorld, two,
-                BodyDef.BodyType.StaticBody, platforms);
-        PhysicsFactory.createBoxBody(mPhysicsWorld, three,
-                BodyDef.BodyType.StaticBody, platforms);
-        PhysicsFactory.createBoxBody(mPhysicsWorld, four,
-                BodyDef.BodyType.StaticBody, platforms);
-        PhysicsFactory.createBoxBody(mPhysicsWorld, five,
-                BodyDef.BodyType.StaticBody, platforms);
-        PhysicsFactory.createBoxBody(mPhysicsWorld, six,
-                BodyDef.BodyType.StaticBody, platforms);
-
-
-
-        scene.attachChild(ground);
-        scene.attachChild(roof);
-        scene.attachChild(left);
-        scene.attachChild(right);
-        scene.attachChild(one);
-        scene.attachChild(two);
-        scene.attachChild(three);
-        scene.attachChild(four);
-        scene.attachChild(five);
-        scene.attachChild(six);
 
         scene.registerUpdateHandler(mPhysicsWorld);
 
@@ -210,5 +224,19 @@ public class Demolition extends BaseGameActivity {
     @Override
     public void onLoadComplete() {
         //To change body of implemented methods use File | Settings | File Templates.
+    }
+
+    private void createRectangle(float x, float y, float width, float height, float angle, FixtureDef wallFixtureDef, BodyDef.BodyType type, Scene scene)
+    {
+        final Shape rectangle = new Rectangle(x, y, width, height);
+
+        if(angle != 0)
+            rectangle.setRotation(angle);
+
+        Body b = PhysicsFactory.createBoxBody(mPhysicsWorld, rectangle,
+                type, wallFixtureDef);
+        scene.attachChild(rectangle);
+        mPhysicsWorld.registerPhysicsConnector(
+                new PhysicsConnector(rectangle, b, true, true));
     }
 }
